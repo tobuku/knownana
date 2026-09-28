@@ -28,147 +28,74 @@ export default function Login() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f5f5f5',
-        padding: '20px',
-      }}
-    >
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '400px',
-          backgroundColor: '#fff',
-          borderRadius: '12px',
-          padding: '40px 32px',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-        }}
-      >
-        {/* Logo placeholder */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div
-            style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '16px',
-              backgroundColor: '#1e293b',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              fontSize: '1.5rem',
-              fontWeight: 700,
-              marginBottom: '12px',
-            }}
-          >
-            KN
+    <div style={{ maxWidth: '360px', margin: '80px auto', padding: '0 16px' }}>
+      <h1 style={{ fontSize: '1.2em', marginBottom: '4px' }}>KnowNana</h1>
+      <p style={{ color: '#888', marginBottom: '24px', fontSize: '0.9em' }}>Parental domain monitor</p>
+
+      <form onSubmit={handleSubmit}>
+        {error && (
+          <div style={{ color: '#cc0000', marginBottom: '12px', fontSize: '0.9em' }}>
+            {error}
           </div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b' }}>KnowNana</h1>
-          <p style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '4px' }}>
-            Parental monitoring dashboard
-          </p>
-        </div>
+        )}
 
-        <form onSubmit={handleSubmit}>
-          {error && (
-            <div
-              style={{
-                padding: '10px 14px',
-                backgroundColor: '#fef2f2',
-                border: '1px solid #fecaca',
-                borderRadius: '8px',
-                color: '#dc2626',
-                fontSize: '0.85rem',
-                marginBottom: '16px',
-              }}
-            >
-              {error}
-            </div>
-          )}
-
-          <label style={{ display: 'block', marginBottom: '16px' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#374151' }}>Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '10px 12px',
-                marginTop: '4px',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                fontSize: '1rem',
-                outline: 'none',
-              }}
-              placeholder="you@example.com"
-            />
-          </label>
-
-          <label style={{ display: 'block', marginBottom: '24px' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#374151' }}>Password</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '10px 12px',
-                marginTop: '4px',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                fontSize: '1rem',
-                outline: 'none',
-              }}
-              placeholder="Min 6 characters"
-            />
-          </label>
-
-          <button
-            type="submit"
-            disabled={submitting}
+        <div style={{ marginBottom: '12px' }}>
+          <label style={{ display: 'block', marginBottom: '2px' }}>Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
             style={{
               width: '100%',
-              padding: '12px',
-              backgroundColor: submitting ? '#94a3b8' : '#1e293b',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              fontWeight: 600,
-              cursor: submitting ? 'not-allowed' : 'pointer',
+              padding: '6px 8px',
+              border: '1px solid #ccc',
+              background: '#fff',
             }}
-          >
-            {submitting ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
-          </button>
-        </form>
-
-        <div style={{ textAlign: 'center', marginTop: '20px' }}>
-          <button
-            onClick={() => {
-              setIsSignUp(!isSignUp);
-              setError('');
-            }}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#2563eb',
-              cursor: 'pointer',
-              fontSize: '0.9rem',
-            }}
-          >
-            {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-          </button>
+            placeholder="you@example.com"
+          />
         </div>
+
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', marginBottom: '2px' }}>Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            style={{
+              width: '100%',
+              padding: '6px 8px',
+              border: '1px solid #ccc',
+              background: '#fff',
+            }}
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={submitting}
+          style={{
+            padding: '6px 16px',
+            border: '1px solid #111',
+            background: '#111',
+            color: '#fff',
+            cursor: submitting ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {submitting ? 'Wait...' : isSignUp ? 'Create Account' : 'Sign In'}
+        </button>
+      </form>
+
+      <div style={{ marginTop: '16px' }}>
+        <a
+          href="#"
+          onClick={(e) => { e.preventDefault(); setIsSignUp(!isSignUp); setError(''); }}
+          style={{ fontSize: '0.9em' }}
+        >
+          {isSignUp ? 'Have an account? Sign in' : 'Create an account'}
+        </a>
       </div>
     </div>
   );

@@ -14,7 +14,6 @@ import { useAuth } from '../context/AuthContext';
 import type { DomainLog, ChildDevice } from '../types';
 import LogList from '../components/LogList';
 
-// Domains that are filtered out as CDN/analytics noise
 const FILTERED_DOMAINS = new Set([
   'google-analytics.com',
   'googletagmanager.com',
@@ -33,10 +32,10 @@ const FILTERED_DOMAINS = new Set([
 type FilterType = 'ALL' | 'RED' | 'YELLOW' | 'GREEN' | 'GRAY' | 'SEARCHES';
 
 const CATEGORY_COLORS: Record<string, string> = {
-  RED: '#dc2626',
-  YELLOW: '#f59e0b',
-  GREEN: '#16a34a',
-  GRAY: '#6b7280',
+  RED: '#cc0000',
+  YELLOW: '#b8860b',
+  GREEN: '#228b22',
+  GRAY: '#888',
 };
 
 export default function Dashboard() {
@@ -114,47 +113,34 @@ export default function Dashboard() {
     return unsub;
   }, [familyId, selectedDate]);
 
-  // Apply filters
   const filteredLogs = useMemo(() => {
     let result = logs;
-
-    // Device filter
     if (selectedDevice !== 'all') {
       result = result.filter((l) => l.deviceId === selectedDevice);
     }
-
-    // Hide CDN/analytics noise unless toggled
     if (!showFiltered) {
       result = result.filter((l) => !FILTERED_DOMAINS.has(l.domain));
     }
-
-    // Category filter
     if (filter === 'SEARCHES') {
       result = result.filter((l) => l.searchTerm);
     } else if (filter !== 'ALL') {
       result = result.filter((l) => l.category === filter);
     }
-
     return result;
   }, [logs, selectedDevice, filter, showFiltered]);
 
-  // Stats
   const stats = useMemo(() => {
     const visible = selectedDevice !== 'all'
       ? logs.filter((l) => l.deviceId === selectedDevice)
       : logs;
-    const totalDuration = visible.reduce((s, l) => s + (l.duration || 0), 0);
     return {
       total: visible.length,
-      timeOnline: totalDuration > 3600
-        ? `${Math.round(totalDuration / 3600)}h ${Math.round((totalDuration % 3600) / 60)}m`
-        : `${Math.round(totalDuration / 60)}m`,
       red: visible.filter((l) => l.category === 'RED').length,
       yellow: visible.filter((l) => l.category === 'YELLOW').length,
     };
   }, [logs, selectedDevice]);
 
-  const filterButtons: { key: FilterType; label: string }[] = [
+  const filterOptions: { key: FilterType; label: string }[] = [
     { key: 'ALL', label: 'All' },
     { key: 'RED', label: 'Red' },
     { key: 'YELLOW', label: 'Yellow' },
@@ -168,28 +154,28 @@ export default function Dashboard() {
       {/* Sidebar */}
       <aside
         style={{
-          width: '240px',
-          backgroundColor: '#1e293b',
-          color: '#e2e8f0',
-          padding: '24px 0',
+          width: '180px',
+          borderRight: '1px solid #ddd',
+          padding: '16px',
           display: 'flex',
           flexDirection: 'column',
           position: 'fixed',
           top: 0,
-          left: sidebarOpen ? 0 : '-240px',
+          left: sidebarOpen ? 0 : '-180px',
           bottom: 0,
+          background: '#fff',
           zIndex: 100,
-          transition: 'left 0.2s ease',
+          transition: 'left 0.15s ease',
         }}
       >
-        <div style={{ padding: '0 20px', marginBottom: '32px' }}>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 700 }}>KnowNana</h2>
-          <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>
+        <div style={{ marginBottom: '24px' }}>
+          <strong>KnowNana</strong>
+          <div style={{ fontSize: '0.8em', color: '#888', marginTop: '2px' }}>
             {user?.email}
-          </p>
+          </div>
         </div>
 
-        <nav style={{ flex: 1 }}>
+        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
           {[
             { to: '/dashboard', label: 'Dashboard' },
             { to: '/settings', label: 'Settings' },
@@ -200,13 +186,11 @@ export default function Dashboard() {
               to={item.to}
               onClick={() => setSidebarOpen(false)}
               style={{
-                display: 'block',
-                padding: '10px 24px',
-                color: '#e2e8f0',
                 textDecoration: 'none',
-                fontSize: '0.95rem',
-                borderLeft: item.to === '/dashboard' ? '3px solid #3b82f6' : '3px solid transparent',
-                backgroundColor: item.to === '/dashboard' ? 'rgba(59,130,246,0.1)' : 'transparent',
+                color: '#111',
+                padding: '4px 0',
+                borderBottom: item.to === '/dashboard' ? '1px solid #111' : 'none',
+                fontSize: '0.95em',
               }}
             >
               {item.label}
@@ -214,24 +198,17 @@ export default function Dashboard() {
           ))}
         </nav>
 
-        <button
-          onClick={async () => {
+        <a
+          href="#"
+          onClick={async (e) => {
+            e.preventDefault();
             await signOut();
             navigate('/');
           }}
-          style={{
-            margin: '0 20px',
-            padding: '10px',
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            border: 'none',
-            borderRadius: '8px',
-            color: '#e2e8f0',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-          }}
+          style={{ fontSize: '0.85em', color: '#888' }}
         >
-          Sign Out
-        </button>
+          Sign out
+        </a>
       </aside>
 
       {/* Sidebar overlay for mobile */}
@@ -241,59 +218,32 @@ export default function Dashboard() {
           style={{
             position: 'fixed',
             inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.4)',
+            background: 'rgba(0,0,0,0.2)',
             zIndex: 99,
           }}
         />
       )}
 
       {/* Desktop sidebar spacer */}
-      <div
-        style={{
-          width: '240px',
-          flexShrink: 0,
-        }}
-        className="sidebar-spacer"
-      />
+      <div style={{ width: '180px', flexShrink: 0 }} className="sidebar-spacer" />
 
       {/* Main content */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        {/* Top bar */}
-        <header
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '12px 20px',
-            backgroundColor: '#fff',
-            borderBottom: '1px solid #e5e7eb',
-            flexWrap: 'wrap',
-          }}
-        >
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '1.3rem',
-              cursor: 'pointer',
-              padding: '4px',
-            }}
+      <main style={{ flex: 1, padding: '16px 20px', maxWidth: '900px' }}>
+        {/* Top controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
+          <a
+            href="#"
+            onClick={(e) => { e.preventDefault(); setSidebarOpen(!sidebarOpen); }}
+            className="sidebar-toggle"
+            style={{ textDecoration: 'none', color: '#111', fontSize: '1.1em' }}
           >
-            |||
-          </button>
+            [=]
+          </a>
 
-          {/* Device selector */}
           <select
             value={selectedDevice}
             onChange={(e) => setSelectedDevice(e.target.value)}
-            style={{
-              padding: '8px 12px',
-              borderRadius: '8px',
-              border: '1px solid #d1d5db',
-              fontSize: '0.9rem',
-              backgroundColor: '#fff',
-            }}
+            style={{ padding: '4px 6px', border: '1px solid #ccc', background: '#fff' }}
           >
             <option value="all">All Devices</option>
             {devices.map((d) => (
@@ -303,97 +253,49 @@ export default function Dashboard() {
             ))}
           </select>
 
-          {/* Date picker */}
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            style={{
-              padding: '8px 12px',
-              borderRadius: '8px',
-              border: '1px solid #d1d5db',
-              fontSize: '0.9rem',
-            }}
+            style={{ padding: '4px 6px', border: '1px solid #ccc', background: '#fff' }}
           />
 
-          <div style={{ flex: 1 }} />
-
-          {/* Show filtered toggle */}
-          <label style={{ fontSize: '0.8rem', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <label style={{ fontSize: '0.85em', color: '#888', display: 'flex', alignItems: 'center', gap: '4px', marginLeft: 'auto' }}>
             <input
               type="checkbox"
               checked={showFiltered}
               onChange={(e) => setShowFiltered(e.target.checked)}
             />
-            Show filtered domains
+            Show CDN noise
           </label>
-        </header>
-
-        {/* Stats bar */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '16px',
-            padding: '12px 20px',
-            backgroundColor: '#fff',
-            borderBottom: '1px solid #e5e7eb',
-            flexWrap: 'wrap',
-          }}
-        >
-          {[
-            { label: 'Total', value: stats.total, color: '#374151' },
-            { label: 'Time Online', value: stats.timeOnline, color: '#374151' },
-            { label: 'Red', value: stats.red, color: CATEGORY_COLORS.RED },
-            { label: 'Yellow', value: stats.yellow, color: CATEGORY_COLORS.YELLOW },
-          ].map((s) => (
-            <div
-              key={s.label}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#f9fafb',
-                borderRadius: '8px',
-                minWidth: '100px',
-              }}
-            >
-              <div style={{ fontSize: '0.7rem', color: '#6b7280', textTransform: 'uppercase', fontWeight: 600 }}>
-                {s.label}
-              </div>
-              <div style={{ fontSize: '1.3rem', fontWeight: 700, color: s.color }}>{s.value}</div>
-            </div>
-          ))}
         </div>
 
-        {/* Filter buttons */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '8px',
-            padding: '12px 20px',
-            backgroundColor: '#fff',
-            borderBottom: '1px solid #e5e7eb',
-            flexWrap: 'wrap',
-          }}
-        >
-          {filterButtons.map((fb) => {
+        {/* Stats line */}
+        <div style={{ fontSize: '0.9em', color: '#555', marginBottom: '10px' }}>
+          {stats.total} domains
+          {stats.red > 0 && <> - <span style={{ color: CATEGORY_COLORS.RED, fontWeight: 600 }}>{stats.red} red</span></>}
+          {stats.yellow > 0 && <> - <span style={{ color: CATEGORY_COLORS.YELLOW, fontWeight: 600 }}>{stats.yellow} yellow</span></>}
+        </div>
+
+        {/* Filter links */}
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', borderBottom: '1px solid #ddd', paddingBottom: '8px' }}>
+          {filterOptions.map((fb) => {
             const isActive = filter === fb.key;
-            const color = CATEGORY_COLORS[fb.key] || '#374151';
+            const color = CATEGORY_COLORS[fb.key] || '#111';
             return (
-              <button
+              <a
                 key={fb.key}
-                onClick={() => setFilter(fb.key)}
+                href="#"
+                onClick={(e) => { e.preventDefault(); setFilter(fb.key); }}
                 style={{
-                  padding: '6px 14px',
-                  borderRadius: '9999px',
-                  border: `1px solid ${isActive ? color : '#d1d5db'}`,
-                  backgroundColor: isActive ? color : '#fff',
-                  color: isActive ? '#fff' : '#374151',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
+                  textDecoration: isActive ? 'underline' : 'none',
+                  color: isActive ? color : '#888',
+                  fontWeight: isActive ? 600 : 400,
+                  fontSize: '0.9em',
                 }}
               >
                 {fb.label}
-              </button>
+              </a>
             );
           })}
         </div>
@@ -402,10 +304,10 @@ export default function Dashboard() {
         <LogList logs={filteredLogs} />
       </main>
 
-      {/* Responsive: show sidebar permanently on desktop via inline media query hack */}
       <style>{`
         @media (min-width: 768px) {
           aside { left: 0 !important; }
+          .sidebar-toggle { display: none !important; }
         }
         @media (max-width: 767px) {
           .sidebar-spacer { display: none !important; }

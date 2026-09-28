@@ -9,21 +9,12 @@ interface LogListProps {
 export default function LogList({ logs }: LogListProps) {
   if (logs.length === 0) {
     return (
-      <div
-        style={{
-          textAlign: 'center',
-          padding: '60px 20px',
-          color: '#9ca3af',
-          fontSize: '1rem',
-        }}
-      >
-        <div style={{ fontSize: '2rem', marginBottom: '12px' }}>No activity</div>
-        <p>No activity logged yet. Set up a child device to start monitoring.</p>
+      <div style={{ padding: '40px 0', color: '#999', textAlign: 'center' }}>
+        No activity logged for this date.
       </div>
     );
   }
 
-  // Group logs by hour
   const groups: { label: string; logs: DomainLog[] }[] = [];
   let currentGroup: { label: string; logs: DomainLog[] } | null = null;
 
@@ -40,37 +31,12 @@ export default function LogList({ logs }: LogListProps) {
   }
 
   return (
-    <div style={{ overflowY: 'auto', flex: 1 }}>
+    <div>
       {groups.map((group, gi) => (
-        <div key={gi}>
-          {/* Hour divider */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '8px 16px',
-              backgroundColor: '#f9fafb',
-              borderBottom: '1px solid #e5e7eb',
-            }}
-          >
-            <span
-              style={{
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: '#6b7280',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-              }}
-            >
-              {group.label}
-            </span>
-            <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }} />
-            <span style={{ fontSize: '0.7rem', color: '#9ca3af' }}>
-              {group.logs.length} {group.logs.length === 1 ? 'entry' : 'entries'}
-            </span>
+        <div key={gi} style={{ marginBottom: '16px' }}>
+          <div style={{ fontSize: '0.8em', color: '#999', borderBottom: '1px solid #ddd', paddingBottom: '2px', marginBottom: '4px' }}>
+            {group.label} ({group.logs.length})
           </div>
-          {/* Entries */}
           {group.logs.map((log) => (
             <LogEntry key={log.id} log={log} />
           ))}

@@ -1,33 +1,29 @@
 import React from 'react';
 import type { CategoryColor } from '../types';
 
-const COLORS: Record<CategoryColor, { bg: string; text: string }> = {
-  RED: { bg: '#dc2626', text: '#fff' },
-  YELLOW: { bg: '#f59e0b', text: '#000' },
-  GREEN: { bg: '#16a34a', text: '#fff' },
-  GRAY: { bg: '#6b7280', text: '#fff' },
+const COLORS: Record<CategoryColor, string> = {
+  RED: '#cc0000',
+  YELLOW: '#b8860b',
+  GREEN: '#228b22',
+  GRAY: '#888',
 };
 
 interface ColorBadgeProps {
   category: CategoryColor;
+  onClick?: () => void;
   style?: React.CSSProperties;
 }
 
-export default function ColorBadge({ category, style }: ColorBadgeProps) {
-  const color = COLORS[category];
+export default function ColorBadge({ category, onClick, style }: ColorBadgeProps) {
   return (
     <span
+      onClick={onClick}
       style={{
-        display: 'inline-block',
-        padding: '2px 10px',
-        borderRadius: '9999px',
-        fontSize: '0.7rem',
+        color: COLORS[category],
+        fontSize: '0.8em',
         fontWeight: 600,
-        letterSpacing: '0.03em',
-        textTransform: 'uppercase',
-        backgroundColor: color.bg,
-        color: color.text,
-        whiteSpace: 'nowrap',
+        textDecoration: 'underline',
+        cursor: onClick ? 'pointer' : 'default',
         ...style,
       }}
     >
