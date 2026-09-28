@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+.npm
+
+# Build output
+dashboard/dist/
+functions/lib/
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+ui-debug.log
+
+# Cloudflare
+worker/.wrangler/
+worker/dist/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+*.secret
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+
+# TypeScript
+*.tsbuildinfo

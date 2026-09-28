@@ -1,0 +1,10 @@
+name = "knownana-dns"
+main = "src/index.ts"
+compatibility_date = "2024-09-25"
+
+[vars]
+# Set these after deploying Firebase Cloud Functions:
+# LOG_ENDPOINT = "https://logdomain-XXXX-uc.a.run.app"
+
+# Secret (set via `wrangler secret put API_SECRET`):
+# API_SECRET - must match the Firebase Cloud Functions API_SECRET
