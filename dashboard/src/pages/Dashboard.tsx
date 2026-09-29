@@ -74,12 +74,14 @@ export default function Dashboard() {
           name: data.deviceName || data.name,
           deviceId: data.deviceId,
           platform: data.platform,
+          active: data.active !== false,
+          archived: data.archived || false,
           lastHeartbeat: data.lastHeartbeat instanceof Timestamp
             ? data.lastHeartbeat.toDate()
             : new Date(data.lastHeartbeat),
         };
       });
-      setDevices(devs);
+      setDevices(devs.filter((d) => !d.archived));
     });
     return unsub;
   }, [familyId]);

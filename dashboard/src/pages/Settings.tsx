@@ -11,9 +11,11 @@ import {
   Timestamp,
   setDoc,
   deleteDoc,
+  arrayRemove,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import type { ChildDevice, FamilySettings, CategoryOverride } from '../types';
 
 const TIMEZONES = [
@@ -39,6 +41,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function Settings() {
   const { user } = useAuth();
+  const { bg, fg, fgMuted, border, borderLight } = useTheme();
   const familyId = user?.uid || '';
 
   const [settings, setSettings] = useState<FamilySettings>({
@@ -51,6 +54,10 @@ export default function Settings() {
   const [newDomain, setNewDomain] = useState('');
   const [newCategory, setNewCategory] = useState('RED');
   const [saving, setSaving] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const [editingDevice, setEditingDevice] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (!familyId) return;
@@ -73,6 +80,8 @@ export default function Settings() {
           name: data.deviceName || data.name,
           deviceId: data.deviceId,
           platform: data.platform,
+          active: data.active !== false,
+          archived: data.archived || false,
           lastHeartbeat:
             data.lastHeartbeat instanceof Timestamp
               ? data.lastHeartbeat.toDate()
@@ -126,39 +135,146 @@ export default function Settings() {
     return Date.now() - date.getTime() < 10 * 60 * 1000;
   }
 
+  async function toggleActive(device: ChildDevice) {
+    await updateDoc(doc(db, 'devices', device.id), { active: !device.active });
+  }
+
+  async function archiveDevice(device: ChildDevice) {
+    await updateDoc(doc(db, 'devices', device.id), { archived: true, active: false });
+  }
+
+  async function unarchiveDevice(device: ChildDevice) {
+    await updateDoc(doc(db, 'devices', device.id), { archived: false });
+  }
+
+  async function deleteDevice(device: ChildDevice) {
+    await deleteDoc(doc(db, 'devices', device.id));
+    // Remove from family's deviceIds array
+    if (familyId) {
+      await updateDoc(doc(db, 'families', familyId), {
+        deviceIds: arrayRemove(device.deviceId),
+      });
+    }
+    setConfirmDelete(null);
+  }
+
+  async function renameDevice(device: ChildDevice) {
+    if (!editName.trim()) return;
+    await updateDoc(doc(db, 'devices', device.id), { deviceName: editName.trim() });
+    setEditingDevice(null);
+    setEditName('');
+  }
+
+  const activeDevices = devices.filter((d) => !d.archived);
+  const archivedDevices = devices.filter((d) => d.archived);
+
   return (
-    <div style={{ maxWidth: '640px', margin: '0 auto', padding: '16px' }}>
+    <div style={{ maxWidth: '640px', margin: '0 auto', padding: '16px', background: bg, color: fg }}>
       <div style={{ marginBottom: '20px' }}>
-        <Link to="/dashboard" style={{ fontSize: '0.9em', color: '#888' }}>&larr; Dashboard</Link>
-        <h1 style={{ fontSize: '1.1em', marginTop: '8px' }}>Settings</h1>
+        <Link to="/dashboard" style={{ fontSize: '0.9em', color: fgMuted }}>&larr; Dashboard</Link>
+        <h1 style={{ fontSize: '1.1em', marginTop: '8px', color: fg }}>Settings</h1>
       </div>
 
       {/* Devices */}
       <section style={{ marginBottom: '28px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderBottom: '1px solid #ddd', paddingBottom: '4px', marginBottom: '8px' }}>
-          <h2 style={{ fontSize: '1em' }}>Devices</h2>
-          <Link to="/device-setup" style={{ fontSize: '0.85em' }}>+ Add Device</Link>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderBottom: `1px solid ${border}`, paddingBottom: '4px', marginBottom: '8px' }}>
+          <h2 style={{ fontSize: '1em', color: fg }}>Devices</h2>
+          <Link to="/install" style={{ fontSize: '0.85em', color: fg }}>+ Add Device</Link>
         </div>
 
-        {devices.length === 0 ? (
-          <p style={{ color: '#888', fontSize: '0.9em' }}>No devices paired yet.</p>
+        {activeDevices.length === 0 ? (
+          <p style={{ color: fgMuted, fontSize: '0.9em' }}>No devices paired yet.</p>
         ) : (
-          devices.map((d) => {
+          activeDevices.map((d) => {
             const recent = isHeartbeatRecent(d.lastHeartbeat);
             return (
-              <div key={d.id} style={{ display: 'flex', gap: '8px', padding: '4px 0', borderBottom: '1px solid #eee' }}>
-                <span style={{ color: recent ? '#228b22' : '#cc0000' }}>{recent ? 'ON' : 'OFF'}</span>
-                <span style={{ flex: 1 }}>{d.name}</span>
-                <span style={{ color: '#888', fontSize: '0.85em' }}>{d.platform} - {d.lastHeartbeat.toLocaleString()}</span>
+              <div key={d.id} style={{ padding: '8px 0', borderBottom: `1px solid ${borderLight}` }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <span style={{ color: !d.active ? fgMuted : recent ? '#228b22' : '#cc0000', fontWeight: 600 }}>
+                    {!d.active ? 'PAUSED' : recent ? 'ON' : 'OFF'}
+                  </span>
+                  {editingDevice === d.id ? (
+                    <span style={{ flex: 1, display: 'flex', gap: '4px' }}>
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') renameDevice(d); if (e.key === 'Escape') setEditingDevice(null); }}
+                        style={{ flex: 1, padding: '2px 4px', border: `1px solid ${border}`, background: bg, color: fg, fontSize: '0.9em' }}
+                        autoFocus
+                      />
+                      <a href="#" onClick={(e) => { e.preventDefault(); renameDevice(d); }} style={{ color: fg, fontSize: '0.85em' }}>[ok]</a>
+                      <a href="#" onClick={(e) => { e.preventDefault(); setEditingDevice(null); }} style={{ color: fgMuted, fontSize: '0.85em' }}>[x]</a>
+                    </span>
+                  ) : (
+                    <span style={{ flex: 1, color: fg }}>{d.name}</span>
+                  )}
+                  <span style={{ color: fgMuted, fontSize: '0.85em' }}>{d.platform}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '12px', marginTop: '4px', paddingLeft: '48px', fontSize: '0.85em' }}>
+                  <a href="#" onClick={(e) => { e.preventDefault(); setEditingDevice(d.id); setEditName(d.name); }} style={{ color: fgMuted }}>rename</a>
+                  <a href="#" onClick={(e) => { e.preventDefault(); toggleActive(d); }} style={{ color: fgMuted }}>
+                    {d.active ? 'pause' : 'resume'}
+                  </a>
+                  <a href="#" onClick={(e) => { e.preventDefault(); archiveDevice(d); }} style={{ color: fgMuted }}>archive</a>
+                  {confirmDelete === d.id ? (
+                    <span>
+                      <span style={{ color: '#cc0000' }}>delete? </span>
+                      <a href="#" onClick={(e) => { e.preventDefault(); deleteDevice(d); }} style={{ color: '#cc0000' }}>yes</a>
+                      {' / '}
+                      <a href="#" onClick={(e) => { e.preventDefault(); setConfirmDelete(null); }} style={{ color: fgMuted }}>no</a>
+                    </span>
+                  ) : (
+                    <a href="#" onClick={(e) => { e.preventDefault(); setConfirmDelete(d.id); }} style={{ color: '#cc0000' }}>delete</a>
+                  )}
+                </div>
+                <div style={{ fontSize: '0.8em', color: fgMuted, marginTop: '2px', paddingLeft: '48px' }}>
+                  Last seen: {d.lastHeartbeat.toLocaleString()}
+                </div>
               </div>
             );
           })
+        )}
+
+        {/* Archived devices */}
+        {archivedDevices.length > 0 && (
+          <div style={{ marginTop: '12px' }}>
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); setShowArchived(!showArchived); }}
+              style={{ fontSize: '0.85em', color: fgMuted }}
+            >
+              {showArchived ? 'Hide' : 'Show'} archived ({archivedDevices.length})
+            </a>
+            {showArchived && archivedDevices.map((d) => (
+              <div key={d.id} style={{ padding: '6px 0', borderBottom: `1px solid ${borderLight}`, opacity: 0.6 }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <span style={{ color: fgMuted, fontWeight: 600 }}>ARCHIVED</span>
+                  <span style={{ flex: 1, color: fgMuted }}>{d.name}</span>
+                  <span style={{ color: fgMuted, fontSize: '0.85em' }}>{d.platform}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '12px', marginTop: '4px', paddingLeft: '72px', fontSize: '0.85em' }}>
+                  <a href="#" onClick={(e) => { e.preventDefault(); unarchiveDevice(d); }} style={{ color: fgMuted }}>restore</a>
+                  {confirmDelete === d.id ? (
+                    <span>
+                      <span style={{ color: '#cc0000' }}>delete permanently? </span>
+                      <a href="#" onClick={(e) => { e.preventDefault(); deleteDevice(d); }} style={{ color: '#cc0000' }}>yes</a>
+                      {' / '}
+                      <a href="#" onClick={(e) => { e.preventDefault(); setConfirmDelete(null); }} style={{ color: fgMuted }}>no</a>
+                    </span>
+                  ) : (
+                    <a href="#" onClick={(e) => { e.preventDefault(); setConfirmDelete(d.id); }} style={{ color: '#cc0000' }}>delete</a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </section>
 
       {/* General */}
       <section style={{ marginBottom: '28px' }}>
-        <h2 style={{ fontSize: '1em', borderBottom: '1px solid #ddd', paddingBottom: '4px', marginBottom: '8px' }}>General</h2>
+        <h2 style={{ fontSize: '1em', borderBottom: `1px solid ${border}`, paddingBottom: '4px', marginBottom: '8px', color: fg }}>General</h2>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -167,7 +283,7 @@ export default function Settings() {
               type="time"
               value={settings.digestTime}
               onChange={(e) => setSettings({ ...settings, digestTime: e.target.value })}
-              style={{ padding: '4px 6px', border: '1px solid #ccc' }}
+              style={{ padding: '4px 6px', border: `1px solid ${border}`, background: bg, color: fg }}
             />
           </div>
 
@@ -176,7 +292,7 @@ export default function Settings() {
             <select
               value={settings.timezone}
               onChange={(e) => setSettings({ ...settings, timezone: e.target.value })}
-              style={{ padding: '4px 6px', border: '1px solid #ccc' }}
+              style={{ padding: '4px 6px', border: `1px solid ${border}`, background: bg, color: fg }}
             >
               {TIMEZONES.map((tz) => (
                 <option key={tz} value={tz}>{tz}</option>
@@ -197,7 +313,7 @@ export default function Settings() {
             <a
               href="#"
               onClick={(e) => { e.preventDefault(); saveSettings(); }}
-              style={{ color: saving ? '#888' : '#111', fontSize: '0.9em' }}
+              style={{ color: saving ? fgMuted : fg, fontSize: '0.9em' }}
             >
               {saving ? 'Saving...' : '[Save Settings]'}
             </a>
@@ -207,8 +323,8 @@ export default function Settings() {
 
       {/* Domain Overrides */}
       <section style={{ marginBottom: '28px' }}>
-        <h2 style={{ fontSize: '1em', borderBottom: '1px solid #ddd', paddingBottom: '4px', marginBottom: '8px' }}>Domain Overrides</h2>
-        <p style={{ fontSize: '0.85em', color: '#888', marginBottom: '10px' }}>
+        <h2 style={{ fontSize: '1em', borderBottom: `1px solid ${border}`, paddingBottom: '4px', marginBottom: '8px', color: fg }}>Domain Overrides</h2>
+        <p style={{ fontSize: '0.85em', color: fgMuted, marginBottom: '10px' }}>
           Manually assign a category. Overrides take priority over automatic classification.
         </p>
 
@@ -218,12 +334,12 @@ export default function Settings() {
             placeholder="example.com"
             value={newDomain}
             onChange={(e) => setNewDomain(e.target.value)}
-            style={{ padding: '4px 6px', border: '1px solid #ccc', flex: 1, minWidth: '160px' }}
+            style={{ padding: '4px 6px', border: `1px solid ${border}`, background: bg, color: fg, flex: 1, minWidth: '160px' }}
           />
           <select
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
-            style={{ padding: '4px 6px', border: '1px solid #ccc' }}
+            style={{ padding: '4px 6px', border: `1px solid ${border}`, background: bg, color: fg }}
           >
             <option value="RED">RED</option>
             <option value="YELLOW">YELLOW</option>
@@ -233,19 +349,19 @@ export default function Settings() {
           <a
             href="#"
             onClick={(e) => { e.preventDefault(); addOverride(); }}
-            style={{ padding: '4px 0', fontSize: '0.9em' }}
+            style={{ padding: '4px 0', fontSize: '0.9em', color: fg }}
           >
             [Add]
           </a>
         </div>
 
         {overrides.length === 0 ? (
-          <p style={{ color: '#888', fontSize: '0.85em' }}>No overrides set.</p>
+          <p style={{ color: fgMuted, fontSize: '0.85em' }}>No overrides set.</p>
         ) : (
           overrides.map((o) => (
-            <div key={o.domain} style={{ display: 'flex', gap: '10px', padding: '3px 0', borderBottom: '1px solid #eee', alignItems: 'baseline' }}>
-              <span style={{ flex: 1 }}>{o.domain}</span>
-              <span style={{ color: CATEGORY_COLORS[o.category] || '#888', fontWeight: 600, fontSize: '0.85em', textDecoration: 'underline' }}>
+            <div key={o.domain} style={{ display: 'flex', gap: '10px', padding: '3px 0', borderBottom: `1px solid ${borderLight}`, alignItems: 'baseline' }}>
+              <span style={{ flex: 1, color: fg }}>{o.domain}</span>
+              <span style={{ color: CATEGORY_COLORS[o.category] || fgMuted, fontWeight: 600, fontSize: '0.85em', textDecoration: 'underline' }}>
                 {o.category}
               </span>
               <a

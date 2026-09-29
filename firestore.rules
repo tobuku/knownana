@@ -38,7 +38,8 @@ service cloud.firestore {
         && resource.data.familyId == request.auth.uid;
       allow create: if request.auth != null
         && request.resource.data.familyId == request.auth.uid;
-      allow update, delete: if false;
+      allow update, delete: if request.auth != null
+        && resource.data.familyId == request.auth.uid;
     }
 
     // Pairing codes - parent can create from dashboard

@@ -22,6 +22,8 @@ export interface ChildDevice {
   deviceId: string;
   platform: Platform;
   lastHeartbeat: Date;
+  active: boolean;
+  archived?: boolean;
 }
 
 export interface FamilySettings {
