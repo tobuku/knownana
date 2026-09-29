@@ -29,6 +29,7 @@ export default function Login() {
 
   return (
     <div style={{ maxWidth: '360px', margin: '80px auto', padding: '0 16px' }}>
+      <img src="/logo.png" alt="KnowNana" style={{ width: '120px', marginBottom: '12px' }} />
       <h1 style={{ fontSize: '1.2em', marginBottom: '4px' }}>KnowNana</h1>
       <p style={{ color: '#888', marginBottom: '24px', fontSize: '0.9em' }}>Parental domain monitor</p>
 

@@ -169,6 +169,8 @@ export default function Dashboard() {
         }}
       >
         <div style={{ marginBottom: '24px' }}>
+          <img src="/logo.png" alt="KnowNana" style={{ width: '80px', marginBottom: '6px' }} />
+          <br />
           <strong>KnowNana</strong>
           <div style={{ fontSize: '0.8em', color: '#888', marginTop: '2px' }}>
             {user?.email}
