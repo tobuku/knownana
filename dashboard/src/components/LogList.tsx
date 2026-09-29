@@ -1,5 +1,6 @@
 import { format, isSameHour } from 'date-fns';
 import type { DomainLog } from '../types';
+import { useTheme } from '../context/ThemeContext';
 import LogEntry from './LogEntry';
 
 interface LogListProps {
@@ -7,9 +8,11 @@ interface LogListProps {
 }
 
 export default function LogList({ logs }: LogListProps) {
+  const { fgMuted, borderLight } = useTheme();
+
   if (logs.length === 0) {
     return (
-      <div style={{ padding: '40px 0', color: '#999', textAlign: 'center' }}>
+      <div style={{ padding: '40px 0', color: fgMuted, textAlign: 'center' }}>
         No activity logged for this date.
       </div>
     );
@@ -34,7 +37,7 @@ export default function LogList({ logs }: LogListProps) {
     <div>
       {groups.map((group, gi) => (
         <div key={gi} style={{ marginBottom: '16px' }}>
-          <div style={{ fontSize: '0.8em', color: '#999', borderBottom: '1px solid #ddd', paddingBottom: '2px', marginBottom: '4px' }}>
+          <div style={{ fontSize: '0.8em', color: fgMuted, borderBottom: `1px solid ${borderLight}`, paddingBottom: '2px', marginBottom: '4px' }}>
             {group.label} ({group.logs.length})
           </div>
           {group.logs.map((log) => (

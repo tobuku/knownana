@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 const Login = lazy(() => import('./pages/Login'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -32,6 +33,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
+    <ThemeProvider>
     <AuthProvider>
       <Suspense fallback={<div style={loadingStyle}>Loading...</div>}>
         <Routes>
@@ -70,5 +72,6 @@ export default function App() {
         </Routes>
       </Suspense>
     </AuthProvider>
+    </ThemeProvider>
   );
 }

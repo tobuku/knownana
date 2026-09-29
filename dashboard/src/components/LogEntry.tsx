@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import type { DomainLog } from '../types';
+import { useTheme } from '../context/ThemeContext';
 import ColorBadge from './ColorBadge';
 
 interface LogEntryProps {
@@ -7,6 +8,7 @@ interface LogEntryProps {
 }
 
 export default function LogEntry({ log }: LogEntryProps) {
+  const { fg, fgMuted, borderLight } = useTheme();
   const timeStr = format(log.timestamp, 'h:mm a');
 
   return (
@@ -16,18 +18,18 @@ export default function LogEntry({ log }: LogEntryProps) {
         alignItems: 'baseline',
         gap: '10px',
         padding: '3px 0',
-        borderBottom: '1px solid #eee',
+        borderBottom: `1px solid ${borderLight}`,
       }}
     >
-      <span style={{ color: '#999', fontSize: '0.85em', flexShrink: 0, width: '70px' }}>
+      <span style={{ color: fgMuted, fontSize: '0.85em', flexShrink: 0, width: '70px' }}>
         {timeStr}
       </span>
-      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: fg }}>
         {log.domain}
       </span>
       <ColorBadge category={log.category} />
       {log.searchTerm && (
-        <span style={{ color: '#555', fontSize: '0.85em' }}>
+        <span style={{ color: fgMuted, fontSize: '0.85em' }}>
           [{log.searchTerm}]
         </span>
       )}

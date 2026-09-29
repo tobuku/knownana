@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Login() {
   const { signIn, signUp } = useAuth();
+  const { bg, fg, fgMuted, border, dark, toggle } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -28,10 +30,10 @@ export default function Login() {
   }
 
   return (
-    <div style={{ maxWidth: '360px', margin: '80px auto', padding: '0 16px' }}>
-      <img src="/logo.png" alt="KnowNana" style={{ width: '120px', marginBottom: '12px' }} />
+    <div style={{ maxWidth: '360px', margin: '80px auto', padding: '0 16px', background: bg, color: fg, minHeight: '100vh' }}>
+      <img src="/logo.png" alt="KnowNana" style={{ width: '120px', marginBottom: '12px', filter: dark ? 'invert(1)' : 'none' }} />
       <h1 style={{ fontSize: '1.2em', marginBottom: '4px' }}>KnowNana</h1>
-      <p style={{ color: '#888', marginBottom: '24px', fontSize: '0.9em' }}>Parental domain monitor</p>
+      <p style={{ color: fgMuted, marginBottom: '24px', fontSize: '0.9em' }}>Parental domain monitor</p>
 
       <form onSubmit={handleSubmit}>
         {error && (
@@ -50,8 +52,9 @@ export default function Login() {
             style={{
               width: '100%',
               padding: '6px 8px',
-              border: '1px solid #ccc',
-              background: '#fff',
+              border: `1px solid ${border}`,
+              background: bg,
+              color: fg,
             }}
             placeholder="you@example.com"
           />
@@ -68,8 +71,9 @@ export default function Login() {
             style={{
               width: '100%',
               padding: '6px 8px',
-              border: '1px solid #ccc',
-              background: '#fff',
+              border: `1px solid ${border}`,
+              background: bg,
+              color: fg,
             }}
           />
         </div>
@@ -79,9 +83,9 @@ export default function Login() {
           disabled={submitting}
           style={{
             padding: '6px 16px',
-            border: '1px solid #111',
-            background: '#111',
-            color: '#fff',
+            border: `1px solid ${fg}`,
+            background: fg,
+            color: bg,
             cursor: submitting ? 'not-allowed' : 'pointer',
           }}
         >
@@ -89,13 +93,20 @@ export default function Login() {
         </button>
       </form>
 
-      <div style={{ marginTop: '16px' }}>
+      <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between' }}>
         <a
           href="#"
           onClick={(e) => { e.preventDefault(); setIsSignUp(!isSignUp); setError(''); }}
-          style={{ fontSize: '0.9em' }}
+          style={{ fontSize: '0.9em', color: fg }}
         >
           {isSignUp ? 'Have an account? Sign in' : 'Create an account'}
+        </a>
+        <a
+          href="#"
+          onClick={(e) => { e.preventDefault(); toggle(); }}
+          style={{ fontSize: '0.85em', color: fgMuted, textDecoration: 'none' }}
+        >
+          [{dark ? 'Light' : 'Dark'}]
         </a>
       </div>
     </div>

@@ -11,6 +11,7 @@ import {
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import type { DomainLog, ChildDevice } from '../types';
 import LogList from '../components/LogList';
 
@@ -31,15 +32,24 @@ const FILTERED_DOMAINS = new Set([
 
 type FilterType = 'ALL' | 'RED' | 'YELLOW' | 'GREEN' | 'GRAY' | 'SEARCHES';
 
-const CATEGORY_COLORS: Record<string, string> = {
+const CATEGORY_COLORS_LIGHT: Record<string, string> = {
   RED: '#cc0000',
   YELLOW: '#b8860b',
   GREEN: '#228b22',
-  GRAY: '#888',
+  GRAY: '#555',
+};
+
+const CATEGORY_COLORS_DARK: Record<string, string> = {
+  RED: '#ff4444',
+  YELLOW: '#daa520',
+  GREEN: '#44bb44',
+  GRAY: '#999',
 };
 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
+  const { bg, fg, fgMuted, border, borderLight, dark, toggle } = useTheme();
+  const CATEGORY_COLORS = dark ? CATEGORY_COLORS_DARK : CATEGORY_COLORS_LIGHT;
   const navigate = useNavigate();
   const familyId = user?.uid || '';
 
@@ -150,12 +160,12 @@ export default function Dashboard() {
   ];
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: bg, color: fg }}>
       {/* Sidebar */}
       <aside
         style={{
           width: '180px',
-          borderRight: '1px solid #ddd',
+          borderRight: `1px solid ${border}`,
           padding: '16px',
           display: 'flex',
           flexDirection: 'column',
@@ -163,16 +173,25 @@ export default function Dashboard() {
           top: 0,
           left: sidebarOpen ? 0 : '-180px',
           bottom: 0,
-          background: '#fff',
+          background: bg,
           zIndex: 100,
           transition: 'left 0.15s ease',
+          overflow: 'hidden',
         }}
       >
         <div style={{ marginBottom: '24px' }}>
-          <img src="/logo.png" alt="KnowNana" style={{ width: '80px', marginBottom: '6px' }} />
+          <img src="/logo.png" alt="KnowNana" style={{ width: '80px', marginBottom: '6px', filter: dark ? 'invert(1)' : 'none' }} />
           <br />
           <strong>KnowNana</strong>
-          <div style={{ fontSize: '0.8em', color: '#888', marginTop: '2px' }}>
+          <div style={{
+            fontSize: '0.75em',
+            color: fgMuted,
+            marginTop: '2px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            maxWidth: '148px',
+          }}>
             {user?.email}
           </div>
         </div>
@@ -189,9 +208,9 @@ export default function Dashboard() {
               onClick={() => setSidebarOpen(false)}
               style={{
                 textDecoration: 'none',
-                color: '#111',
+                color: fg,
                 padding: '4px 0',
-                borderBottom: item.to === '/dashboard' ? '1px solid #111' : 'none',
+                borderBottom: item.to === '/dashboard' ? `1px solid ${fg}` : 'none',
                 fontSize: '0.95em',
               }}
             >
@@ -200,17 +219,26 @@ export default function Dashboard() {
           ))}
         </nav>
 
-        <a
-          href="#"
-          onClick={async (e) => {
-            e.preventDefault();
-            await signOut();
-            navigate('/');
-          }}
-          style={{ fontSize: '0.85em', color: '#888' }}
-        >
-          Sign out
-        </a>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <a
+            href="#"
+            onClick={(e) => { e.preventDefault(); toggle(); }}
+            style={{ fontSize: '0.85em', color: fgMuted, textDecoration: 'none' }}
+          >
+            [{dark ? 'Light' : 'Dark'}]
+          </a>
+          <a
+            href="#"
+            onClick={async (e) => {
+              e.preventDefault();
+              await signOut();
+              navigate('/');
+            }}
+            style={{ fontSize: '0.85em', color: fgMuted, textDecoration: 'none' }}
+          >
+            Sign out
+          </a>
+        </div>
       </aside>
 
       {/* Sidebar overlay for mobile */}
@@ -220,7 +248,7 @@ export default function Dashboard() {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,0,0,0.2)',
+            background: 'rgba(0,0,0,0.3)',
             zIndex: 99,
           }}
         />
@@ -237,7 +265,7 @@ export default function Dashboard() {
             href="#"
             onClick={(e) => { e.preventDefault(); setSidebarOpen(!sidebarOpen); }}
             className="sidebar-toggle"
-            style={{ textDecoration: 'none', color: '#111', fontSize: '1.1em' }}
+            style={{ textDecoration: 'none', color: fg, fontSize: '1.1em' }}
           >
             [=]
           </a>
@@ -245,7 +273,7 @@ export default function Dashboard() {
           <select
             value={selectedDevice}
             onChange={(e) => setSelectedDevice(e.target.value)}
-            style={{ padding: '4px 6px', border: '1px solid #ccc', background: '#fff' }}
+            style={{ padding: '4px 6px', border: `1px solid ${border}`, background: bg, color: fg }}
           >
             <option value="all">All Devices</option>
             {devices.map((d) => (
@@ -259,10 +287,10 @@ export default function Dashboard() {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            style={{ padding: '4px 6px', border: '1px solid #ccc', background: '#fff' }}
+            style={{ padding: '4px 6px', border: `1px solid ${border}`, background: bg, color: fg }}
           />
 
-          <label style={{ fontSize: '0.85em', color: '#888', display: 'flex', alignItems: 'center', gap: '4px', marginLeft: 'auto' }}>
+          <label style={{ fontSize: '0.85em', color: fgMuted, display: 'flex', alignItems: 'center', gap: '4px', marginLeft: 'auto' }}>
             <input
               type="checkbox"
               checked={showFiltered}
@@ -273,17 +301,17 @@ export default function Dashboard() {
         </div>
 
         {/* Stats line */}
-        <div style={{ fontSize: '0.9em', color: '#555', marginBottom: '10px' }}>
+        <div style={{ fontSize: '0.9em', color: fg, marginBottom: '10px' }}>
           {stats.total} domains
           {stats.red > 0 && <> - <span style={{ color: CATEGORY_COLORS.RED, fontWeight: 600 }}>{stats.red} red</span></>}
           {stats.yellow > 0 && <> - <span style={{ color: CATEGORY_COLORS.YELLOW, fontWeight: 600 }}>{stats.yellow} yellow</span></>}
         </div>
 
         {/* Filter links */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', borderBottom: '1px solid #ddd', paddingBottom: '8px' }}>
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', borderBottom: `1px solid ${borderLight}`, paddingBottom: '8px' }}>
           {filterOptions.map((fb) => {
             const isActive = filter === fb.key;
-            const color = CATEGORY_COLORS[fb.key] || '#111';
+            const color = CATEGORY_COLORS[fb.key] || fg;
             return (
               <a
                 key={fb.key}
@@ -291,7 +319,7 @@ export default function Dashboard() {
                 onClick={(e) => { e.preventDefault(); setFilter(fb.key); }}
                 style={{
                   textDecoration: isActive ? 'underline' : 'none',
-                  color: isActive ? color : '#888',
+                  color: isActive ? color : fgMuted,
                   fontWeight: isActive ? 600 : 400,
                   fontSize: '0.9em',
                 }}
