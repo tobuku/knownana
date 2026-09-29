@@ -64,13 +64,14 @@ export default function Dashboard() {
   // Fetch devices
   useEffect(() => {
     if (!familyId) return;
-    const devRef = collection(db, 'families', familyId, 'devices');
-    const unsub = onSnapshot(devRef, (snap) => {
+    const devRef = collection(db, 'devices');
+    const q = query(devRef, where('familyId', '==', familyId));
+    const unsub = onSnapshot(q, (snap) => {
       const devs: ChildDevice[] = snap.docs.map((d) => {
         const data = d.data();
         return {
           id: d.id,
-          name: data.name,
+          name: data.deviceName || data.name,
           deviceId: data.deviceId,
           platform: data.platform,
           lastHeartbeat: data.lastHeartbeat instanceof Timestamp

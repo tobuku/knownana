@@ -5,6 +5,8 @@ import {
   getDoc,
   updateDoc,
   collection,
+  query,
+  where,
   onSnapshot,
   Timestamp,
   setDoc,
@@ -62,12 +64,13 @@ export default function Settings() {
 
   useEffect(() => {
     if (!familyId) return;
-    const unsub = onSnapshot(collection(db, 'families', familyId, 'devices'), (snap) => {
+    const devQuery = query(collection(db, 'devices'), where('familyId', '==', familyId));
+    const unsub = onSnapshot(devQuery, (snap) => {
       const devs: ChildDevice[] = snap.docs.map((d) => {
         const data = d.data();
         return {
           id: d.id,
-          name: data.name,
+          name: data.deviceName || data.name,
           deviceId: data.deviceId,
           platform: data.platform,
           lastHeartbeat:
