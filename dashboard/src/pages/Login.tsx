@@ -30,12 +30,12 @@ export default function Login() {
   }
 
   return (
-    <div style={{ maxWidth: '360px', margin: '80px auto', padding: '0 16px', background: bg, color: fg, minHeight: '100vh' }}>
+    <div style={{ maxWidth: '360px', margin: '80px auto', padding: '0 16px', background: bg, color: fg, minHeight: '100vh', textAlign: 'center' }}>
       <img src="/logo.png" alt="KnowNana" style={{ width: '120px', marginBottom: '12px', filter: dark ? 'invert(1)' : 'none' }} />
       <h1 style={{ fontSize: '1.2em', marginBottom: '4px' }}>KnowNana</h1>
-      <p style={{ color: fgMuted, marginBottom: '24px', fontSize: '0.9em' }}>Parental domain monitor</p>
+      <p style={{ color: fgMuted, marginBottom: '24px', fontSize: '0.9em' }}>Parental Domain Monitor</p>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>
         {error && (
           <div style={{ color: '#cc0000', marginBottom: '12px', fontSize: '0.9em' }}>
             {error}
