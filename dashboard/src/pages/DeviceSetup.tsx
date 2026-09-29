@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 function generateCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -10,6 +11,7 @@ function generateCode(): string {
 
 export default function DeviceSetup() {
   const { user } = useAuth();
+  const { bg, fg, fgMuted, borderLight } = useTheme();
   const familyId = user?.uid || '';
   const [code, setCode] = useState('');
   const [expiresAt, setExpiresAt] = useState<Date | null>(null);
@@ -66,69 +68,61 @@ export default function DeviceSetup() {
   }
 
   return (
-    <div style={{ maxWidth: '540px', margin: '0 auto', padding: '16px' }}>
+    <div style={{ maxWidth: '540px', margin: '0 auto', padding: '16px', background: bg, color: fg }}>
       <div style={{ marginBottom: '20px' }}>
-        <Link to="/settings" style={{ fontSize: '0.9em', color: '#888' }}>&larr; Settings</Link>
+        <Link to="/settings" style={{ fontSize: '0.9em', color: fgMuted }}>&larr; Settings</Link>
         <h1 style={{ fontSize: '1.1em', marginTop: '8px' }}>Add Device</h1>
       </div>
 
-      {/* Pairing Code */}
-      <section style={{ marginBottom: '28px', textAlign: 'center' }}>
-        <p style={{ fontSize: '0.9em', color: '#888', marginBottom: '12px' }}>
-          Enter this code on your child's device.
+      {/* One-click install link */}
+      <section style={{ marginBottom: '28px', padding: '12px', border: `1px solid ${borderLight}` }}>
+        <p style={{ fontSize: '0.9em', marginBottom: '8px' }}>
+          On the child's device right now?
         </p>
-
-        <div style={{ fontSize: '2.5em', fontWeight: 700, letterSpacing: '0.25em', marginBottom: '8px' }}>
-          {code || '------'}
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '6px' }}>
-          <a href="#" onClick={(e) => { e.preventDefault(); copyCode(); }} style={{ fontSize: '0.9em' }}>
-            {copied ? 'Copied' : '[Copy]'}
-          </a>
-          <a href="#" onClick={(e) => { e.preventDefault(); createCode(); }} style={{ fontSize: '0.9em' }}>
-            [New Code]
-          </a>
-        </div>
-
-        <p style={{ fontSize: '0.8em', color: '#999' }}>
-          Expires in {timeLeft}
+        <Link
+          to="/install"
+          style={{ fontSize: '1.05em', fontWeight: 700, color: fg, textDecoration: 'underline' }}
+        >
+          INSTALL ON THIS DEVICE
+        </Link>
+        <p style={{ fontSize: '0.8em', color: fgMuted, marginTop: '6px' }}>
+          Auto-detects platform, generates device ID, configures DNS in one click.
         </p>
       </section>
 
-      {/* Instructions */}
-      <section style={{ marginBottom: '20px' }}>
-        <h3 style={{ fontSize: '1em', borderBottom: '1px solid #ddd', paddingBottom: '4px', marginBottom: '8px' }}>
-          iPhone / iPad
+      {/* Pairing Code for mobile apps */}
+      <section style={{ marginBottom: '28px' }}>
+        <h3 style={{ fontSize: '1em', borderBottom: `1px solid ${borderLight}`, paddingBottom: '4px', marginBottom: '10px' }}>
+          Mobile App (Pairing Code)
         </h3>
-        <ol style={{ paddingLeft: '20px', fontSize: '0.9em', lineHeight: 1.8 }}>
-          <li>Install KnowNana from the App Store</li>
+        <p style={{ fontSize: '0.85em', color: fgMuted, marginBottom: '12px' }}>
+          For iOS/Android apps - enter this code on the child's device.
+        </p>
+
+        <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+          <div style={{ fontSize: '2.5em', fontWeight: 700, letterSpacing: '0.25em', marginBottom: '8px' }}>
+            {code || '------'}
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '6px' }}>
+            <a href="#" onClick={(e) => { e.preventDefault(); copyCode(); }} style={{ fontSize: '0.9em', color: fg }}>
+              {copied ? 'Copied' : '[Copy]'}
+            </a>
+            <a href="#" onClick={(e) => { e.preventDefault(); createCode(); }} style={{ fontSize: '0.9em', color: fg }}>
+              [New Code]
+            </a>
+          </div>
+
+          <p style={{ fontSize: '0.8em', color: fgMuted }}>
+            Expires in {timeLeft}
+          </p>
+        </div>
+
+        <ol style={{ paddingLeft: '20px', fontSize: '0.85em', lineHeight: 1.8, color: fgMuted }}>
+          <li>Install KnowNana on child's device (App Store / Google Play)</li>
           <li>Open the app, tap Join Family</li>
-          <li>Enter code: <strong>{code}</strong></li>
+          <li>Enter code: <strong style={{ color: fg }}>{code}</strong></li>
           <li>Enter child's name, grant permissions</li>
-        </ol>
-      </section>
-
-      <section style={{ marginBottom: '20px' }}>
-        <h3 style={{ fontSize: '1em', borderBottom: '1px solid #ddd', paddingBottom: '4px', marginBottom: '8px' }}>
-          Android
-        </h3>
-        <ol style={{ paddingLeft: '20px', fontSize: '0.9em', lineHeight: 1.8 }}>
-          <li>Install KnowNana from Google Play</li>
-          <li>Open the app, tap Join Family</li>
-          <li>Enter code: <strong>{code}</strong></li>
-          <li>Grant Accessibility Service and Usage Access</li>
-        </ol>
-      </section>
-
-      <section style={{ marginBottom: '20px' }}>
-        <h3 style={{ fontSize: '1em', borderBottom: '1px solid #ddd', paddingBottom: '4px', marginBottom: '8px' }}>
-          PC (Browser)
-        </h3>
-        <ol style={{ paddingLeft: '20px', fontSize: '0.9em', lineHeight: 1.8 }}>
-          <li>Open browser Settings &gt; Security &gt; DNS</li>
-          <li>Enable secure DNS, select Custom</li>
-          <li>Enter: <strong>https://dns.knownana.com/dns-query/DEVICE_ID</strong></li>
         </ol>
       </section>
     </div>

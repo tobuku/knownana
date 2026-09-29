@@ -9,3 +9,5 @@ export { digestEmail } from "./digestEmail";
 export { redAlert } from "./redAlert";
 export { heartbeat } from "./heartbeat";
 export { generatePairingCode, pairDevice } from "./pairing";
+export { generateInstaller } from "./generateInstaller";
+export { serveInstaller } from "./serveInstaller";

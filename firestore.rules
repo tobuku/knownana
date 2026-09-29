@@ -32,11 +32,13 @@ service cloud.firestore {
       }
     }
 
-    // Devices - Cloud Functions write, parent can read their family's devices
+    // Devices - parent can read their own + create new devices for their family
     match /devices/{deviceId} {
       allow read: if request.auth != null
         && resource.data.familyId == request.auth.uid;
-      allow write: if false;
+      allow create: if request.auth != null
+        && request.resource.data.familyId == request.auth.uid;
+      allow update, delete: if false;
     }
 
     // Pairing codes - parent can create from dashboard

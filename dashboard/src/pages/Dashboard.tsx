@@ -201,7 +201,7 @@ export default function Dashboard() {
           {[
             { to: '/dashboard', label: 'Dashboard' },
             { to: '/settings', label: 'Settings' },
-            { to: '/device-setup', label: 'Add Device' },
+            { to: '/install', label: 'Install on Device' },
           ].map((item) => (
             <Link
               key={item.to}

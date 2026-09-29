@@ -7,6 +7,7 @@ const Login = lazy(() => import('./pages/Login'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Settings = lazy(() => import('./pages/Settings'));
 const DeviceSetup = lazy(() => import('./pages/DeviceSetup'));
+const InstallDevice = lazy(() => import('./pages/InstallDevice'));
 
 const loadingStyle: React.CSSProperties = {
   display: 'flex',
@@ -66,6 +67,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <DeviceSetup />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/install"
+            element={
+              <ProtectedRoute>
+                <InstallDevice />
               </ProtectedRoute>
             }
           />
