@@ -5,6 +5,7 @@ import {
   query,
   where,
   orderBy,
+  limit,
   onSnapshot,
   Timestamp,
 } from 'firebase/firestore';
@@ -31,6 +32,8 @@ const FILTERED_DOMAINS = new Set([
 ]);
 
 type FilterType = 'ALL' | 'RED' | 'YELLOW' | 'GREEN' | 'GRAY' | 'SEARCHES';
+
+const LOG_LIMIT = 500;
 
 const CATEGORY_COLORS_LIGHT: Record<string, string> = {
   RED: '#cc0000',
@@ -98,6 +101,7 @@ export default function Dashboard() {
       where('timestamp', '>=', dayStart),
       where('timestamp', '<=', dayEnd),
       orderBy('timestamp', 'desc'),
+      limit(LOG_LIMIT),
     ];
 
     const q = query(logsRef, ...constraints);
@@ -334,6 +338,11 @@ export default function Dashboard() {
         </div>
 
         {/* Log list */}
+        {logs.length >= LOG_LIMIT && (
+          <div style={{ fontSize: '0.85em', color: fgMuted, marginBottom: '8px' }}>
+            Showing first {LOG_LIMIT} entries for this date.
+          </div>
+        )}
         <LogList logs={filteredLogs} />
       </main>
 

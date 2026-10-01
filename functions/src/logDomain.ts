@@ -58,20 +58,18 @@ export const logDomain = onRequest(
 
     try {
       // Look up which family this device belongs to
-      const devicesSnap = await admin
+      const deviceDoc = await admin
         .firestore()
         .collection("devices")
-        .where("deviceId", "==", deviceId)
-        .limit(1)
+        .doc(deviceId)
         .get();
 
-      if (devicesSnap.empty) {
+      if (!deviceDoc.exists) {
         res.status(404).json({ error: "Device not found" });
         return;
       }
 
-      const deviceDoc = devicesSnap.docs[0];
-      const familyId = deviceDoc.data().familyId as string;
+      const familyId = deviceDoc.data()!.familyId as string;
 
       if (!familyId) {
         res.status(400).json({ error: "Device not linked to a family" });

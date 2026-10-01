@@ -9,7 +9,7 @@ const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
 
 export const redAlert = onDocumentCreated(
   {
-    document: "families/{familyId}/logs/{logId}",
+    document: "families/{familyId}/redAlerts/{logId}",
     secrets: [RESEND_API_KEY],
     memory: "256MiB",
   },
@@ -18,7 +18,7 @@ export const redAlert = onDocumentCreated(
     if (!snap) return;
 
     const data = snap.data();
-    if (!data || data.category !== "RED") return;
+    if (!data) return;
 
     const familyId = event.params.familyId;
 

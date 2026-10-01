@@ -2,10 +2,13 @@
  * Infrastructure / CDN / analytics / ad domains that generate high-volume
  * queries with no parental-monitoring value.  Logging is skipped when the
  * queried domain (or its parent) appears in this set.
+ *
+ * IMPORTANT: Do NOT add user-facing domains here (google.com, facebook.com,
+ * twitter.com, bing.com, youtube.com, etc.). Parents need to see those in
+ * the dashboard. Only suppress true background infrastructure noise.
  */
 export const SUPPRESS_LIST: ReadonlySet<string> = new Set([
-  // --- Google infrastructure ---
-  "google.com",
+  // --- Google infrastructure (not google.com itself) ---
   "googleapis.com",
   "gstatic.com",
   "google-analytics.com",
@@ -17,19 +20,10 @@ export const SUPPRESS_LIST: ReadonlySet<string> = new Set([
   "gvt1.com",
   "gvt2.com",
   "1e100.net",
-  "google.ca",
-  "google.co.uk",
   "ggpht.com",
-  "android.clients.google.com",
-  "clients1.google.com",
-  "clients2.google.com",
-  "clients3.google.com",
-  "clients4.google.com",
 
-  // --- Apple ---
-  "apple.com",
+  // --- Apple infrastructure (not apple.com itself) ---
   "apple-dns.net",
-  "icloud.com",
   "icloud-content.com",
   "mzstatic.com",
   "apple-cloudkit.com",
@@ -38,59 +32,41 @@ export const SUPPRESS_LIST: ReadonlySet<string> = new Set([
   "ls.apple.com",
   "gs-loc.apple.com",
 
-  // --- Cloudflare ---
+  // --- Cloudflare infrastructure ---
   "cloudflare.com",
   "cloudflare-dns.com",
   "cloudflareinsights.com",
-  "cdnjs.cloudflare.com",
 
-  // --- Amazon / AWS ---
+  // --- AWS infrastructure (not amazon.com itself) ---
   "amazonaws.com",
   "cloudfront.net",
-  "amazon.com",
   "amazontrust.com",
   "amazonwebservices.com",
   "elasticbeanstalk.com",
   "awsstatic.com",
-  "media-amazon.com",
-  "ssl-images-amazon.com",
 
-  // --- Microsoft / Azure ---
-  "microsoft.com",
+  // --- Microsoft infrastructure (not bing.com, skype.com, etc.) ---
   "microsoftonline.com",
   "msedge.net",
   "msftconnecttest.com",
   "msftncsi.com",
-  "live.com",
   "live.net",
-  "office.com",
   "office.net",
-  "office365.com",
-  "windows.com",
   "windows.net",
   "windowsupdate.com",
-  "azure.com",
   "azureedge.net",
-  "bing.com",
-  "bing.net",
-  "skype.com",
-  "visualstudio.com",
   "vo.msecnd.net",
   "trafficmanager.net",
   "login.microsoftonline.com",
 
-  // --- Facebook / Meta ---
-  "facebook.com",
+  // --- Meta infrastructure (not facebook.com, instagram.com) ---
   "fbcdn.net",
   "fbsbx.com",
   "facebook.net",
-  "fb.com",
   "accountkit.com",
 
   // --- Ad / tracking networks ---
   "doubleclick.net",
-  "googlesyndication.com",
-  "googleadservices.com",
   "moatads.com",
   "scorecardresearch.com",
   "quantserve.com",
@@ -171,7 +147,6 @@ export const SUPPRESS_LIST: ReadonlySet<string> = new Set([
   "connectivitycheck.gstatic.com",
   "connectivitycheck.android.com",
   "detectportal.firefox.com",
-  "msftconnecttest.com",
 
   // --- Telemetry / crash reporting ---
   "sentry.io",
@@ -183,8 +158,7 @@ export const SUPPRESS_LIST: ReadonlySet<string> = new Set([
   "fcm.googleapis.com",
   "app-measurement.com",
 
-  // --- Common trackers / widgets ---
-  "twitter.com",
+  // --- Font / widget infrastructure ---
   "twimg.com",
   "t.co",
   "typekit.net",
@@ -197,13 +171,14 @@ export const SUPPRESS_LIST: ReadonlySet<string> = new Set([
   "wp.com",
   "s.w.org",
 
-  // --- Miscellaneous infra ---
-  "cloudflare-dns.com",
+  // --- DNS resolvers ---
   "quad9.net",
   "opendns.com",
   "dnscrypt.info",
   "edns.ip",
   "use-application-dns.net",
+
+  // --- Local / reserved ---
   "arpa",
   "localhost",
   "local",
@@ -213,10 +188,9 @@ export const SUPPRESS_LIST: ReadonlySet<string> = new Set([
   "gateway",
   "router",
 
-  // --- Akamai / Edgecast alternate domains ---
+  // --- Akamai alternate domains ---
   "akadns.net",
   "akam.net",
-  "edgekey.net",
 
   // --- Push / notification services ---
   "onesignal.com",
@@ -226,7 +200,7 @@ export const SUPPRESS_LIST: ReadonlySet<string> = new Set([
   "pusher.com",
   "pushover.net",
 
-  // --- Analytics continued ---
+  // --- Analytics / marketing infra ---
   "comscore.com",
   "omtrdc.net",
   "2o7.net",
@@ -244,13 +218,6 @@ export const SUPPRESS_LIST: ReadonlySet<string> = new Set([
   "statuspage.io",
   "atlassian.net",
   "atlassian.com",
-
-  // --- Common device / OS update domains ---
-  "xboxlive.com",
-  "playstation.net",
-  "playstation.com",
-  "nintendo.net",
-  "nianticlabs.com",
 ]);
 
 /**
