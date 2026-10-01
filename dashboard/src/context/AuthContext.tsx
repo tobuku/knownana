@@ -28,7 +28,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(u);
       setLoading(false);
     });
-    return unsubscribe;
+    // Fallback: if onAuthStateChanged never fires (blocked cookies in incognito),
+    // stop loading after 4 seconds so the login page still renders
+    const timeout = setTimeout(() => setLoading(false), 4000);
+    return () => { unsubscribe(); clearTimeout(timeout); };
   }, []);
 
   async function signIn(email: string, password: string) {
