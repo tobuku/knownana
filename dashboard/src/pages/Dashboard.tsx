@@ -152,6 +152,7 @@ export default function Dashboard() {
       : logs;
     return {
       total: visible.length,
+      uniqueDomains: new Set(visible.map((l) => l.domain)).size,
       red: visible.filter((l) => l.category === 'RED').length,
       yellow: visible.filter((l) => l.category === 'YELLOW').length,
     };
@@ -309,7 +310,7 @@ export default function Dashboard() {
 
         {/* Stats line */}
         <div style={{ fontSize: '0.9em', color: fg, marginBottom: '10px' }}>
-          {stats.total} domains
+          {stats.uniqueDomains} sites ({stats.total} queries)
           {stats.red > 0 && <> - <span style={{ color: CATEGORY_COLORS.RED, fontWeight: 600 }}>{stats.red} red</span></>}
           {stats.yellow > 0 && <> - <span style={{ color: CATEGORY_COLORS.YELLOW, fontWeight: 600 }}>{stats.yellow} yellow</span></>}
         </div>

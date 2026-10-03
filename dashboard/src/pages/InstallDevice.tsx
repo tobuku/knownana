@@ -215,12 +215,25 @@ export default function InstallDevice() {
           </h3>
 
           {platform === 'ios' ? (
-            <ol style={{ paddingLeft: '20px', fontSize: '0.85em', lineHeight: 2, color: fgMuted }}>
-              <li>The profile downloaded. A notification should appear saying "Profile Downloaded".</li>
-              <li>Go to <strong style={{ color: fg }}>Settings &gt; General &gt; VPN & Device Management</strong></li>
-              <li>Tap <strong style={{ color: fg }}>KnowNana - {result.deviceId}</strong></li>
-              <li>Tap <strong style={{ color: fg }}>Install</strong>, enter passcode, tap Install again</li>
-            </ol>
+            <>
+              <ol style={{ paddingLeft: '20px', fontSize: '0.85em', lineHeight: 2, color: fgMuted }}>
+                <li>The profile downloaded. A notification should appear saying "Profile Downloaded".</li>
+                <li>Go to <strong style={{ color: fg }}>Settings &gt; General &gt; VPN & Device Management</strong></li>
+                <li>Tap <strong style={{ color: fg }}>KnowNana - {deviceName || result.deviceId}</strong></li>
+                <li>Tap <strong style={{ color: fg }}>Install</strong>, enter passcode, tap Install again</li>
+              </ol>
+              <div style={{ fontSize: '0.85em', color: fgMuted, marginTop: '8px' }}>
+                <a
+                  href={`https://us-central1-${projectId}.cloudfunctions.net/serveInstaller?token=${result.token}`}
+                  style={{ color: fg, textDecoration: 'underline' }}
+                >
+                  Profile didn't appear? Tap here to re-download
+                </a>
+              </div>
+              <div style={{ fontSize: '0.8em', color: fgMuted, marginTop: '8px', padding: '8px', border: `1px solid ${borderLight}` }}>
+                If you have old KnowNana profiles from testing, remove them first in Settings &gt; General &gt; VPN & Device Management.
+              </div>
+            </>
           ) : (
             <ol style={{ paddingLeft: '20px', fontSize: '0.85em', lineHeight: 2, color: fgMuted }}>
               <li>The profile downloaded. Double-click the .mobileconfig file.</li>

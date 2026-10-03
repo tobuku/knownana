@@ -68,7 +68,8 @@ pause
 `;
 }
 
-function buildMobileconfig(deviceId: string, dohUrl: string): string {
+function buildMobileconfig(deviceId: string, dohUrl: string, deviceName?: string): string {
+  const displayName = deviceName || deviceId;
   const payloadUUID = crypto.randomUUID();
   const profileUUID = crypto.randomUUID();
 
@@ -99,7 +100,7 @@ function buildMobileconfig(deviceId: string, dohUrl: string): string {
     </dict>
   </array>
   <key>PayloadDisplayName</key>
-  <string>KnowNana - ${deviceId}</string>
+  <string>KnowNana - ${displayName}</string>
   <key>PayloadIdentifier</key>
   <string>com.knownana.profile.${deviceId}</string>
   <key>PayloadType</key>
@@ -198,8 +199,8 @@ export const generateInstaller = onCall(
     }
 
     if (platform === "mac" || platform === "ios") {
-      const mobileconfig = buildMobileconfig(deviceId, dohUrl);
-      const tokenExpires = new Date(Date.now() + 30 * 60 * 1000); // 30 min
+      const mobileconfig = buildMobileconfig(deviceId, dohUrl, deviceName);
+      const tokenExpires = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours
       const expiresAt = admin.firestore.Timestamp.fromDate(tokenExpires);
 
       // Token for immediate download (auto-redirect)

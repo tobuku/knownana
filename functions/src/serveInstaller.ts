@@ -52,15 +52,20 @@ export const serveInstaller = onRequest(
       return;
     }
 
-    // Delete token after use (one-time download)
-    await db.collection("installerTokens").doc(token).delete();
-
-    // Serve the .mobileconfig with correct headers
+    // Serve the .mobileconfig with correct headers (send response before token update)
     res.setHeader("Content-Type", "application/x-apple-asn1");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="knownana-${deviceId}.mobileconfig"`
+      `inline; filename="knownana-${deviceId}.mobileconfig"`
     );
     res.status(200).send(mobileconfig);
+
+    // Allow up to 3 downloads before deleting token
+    const count = (data.downloadCount || 0) + 1;
+    if (count >= 3) {
+      db.collection("installerTokens").doc(token).delete().catch(() => {});
+    } else {
+      db.collection("installerTokens").doc(token).update({ downloadCount: count }).catch(() => {});
+    }
   }
 );

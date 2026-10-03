@@ -16,6 +16,12 @@ export interface DomainLog {
   deviceId: string;
 }
 
+export interface GroupedDomainLog {
+  log: DomainLog;
+  visitCount: number;
+  searchTerms: string[];
+}
+
 export interface ChildDevice {
   id: string;
   name: string;
